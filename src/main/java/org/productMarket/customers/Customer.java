@@ -12,19 +12,18 @@ public class Customer implements Serializable {
 
     private String name;
     private BigDecimal money;
-    private Map<Product, Integer> boughtProducts;
+//    private Map<Product, Integer> boughtProducts;
 
     public Customer(String name, BigDecimal money) throws NegativeStackOfMoney {
         this.setName(name);
         this.setMoney(money);
-        this.boughtProducts = new HashMap<>();
     }
 
-    public void buyProduct(Product product, Integer quantity) {
-        this.boughtProducts.putIfAbsent(product, 0);
-        this.boughtProducts.put(product, this.boughtProducts.get(product) + quantity);
-        this.money = this.money.subtract(product.getSellingPrice().multiply(BigDecimal.valueOf(quantity)));
-    }
+//    public void buyProduct(Product product, Integer quantity) {
+//        this.boughtProducts.putIfAbsent(product, 0);
+//        this.boughtProducts.put(product, this.boughtProducts.get(product) + quantity);
+//        this.money = this.money.subtract(product.getSellingPrice().multiply(BigDecimal.valueOf(quantity)));
+//    }
 
     public boolean canBuyProduct(Product product, Integer quantity) throws NotEnoughMoneyToBuyProduct {
         BigDecimal totalPrice = product.getSellingPrice().multiply(BigDecimal.valueOf(quantity));
@@ -41,10 +40,6 @@ public class Customer implements Serializable {
 
     public BigDecimal getMoney() {
         return money;
-    }
-
-    public Map<Product, Integer> getBoughtProducts() {
-        return Collections.unmodifiableMap(boughtProducts);
     }
 
     public void setName(String name) {
@@ -66,7 +61,6 @@ public class Customer implements Serializable {
         return "Customer{" +
                 "name='" + name + '\'' +
                 ", money=" + money +
-                ", boughtProducts=" + boughtProducts +
                 '}';
     }
 }

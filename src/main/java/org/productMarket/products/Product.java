@@ -30,7 +30,7 @@ public abstract class Product implements Serializable {
 
     public boolean isExpired() throws NonSellableExpiredProduct {
         if (this.dateOfExpiry.isAfter(LocalDate.now())) {
-            throw new NonSellableExpiredProduct("This product is expired with amount of days: ", ChronoUnit.DAYS.between(this.dateOfExpiry, LocalDate.now()));
+            throw new NonSellableExpiredProduct(String.format("This product is expired with %d days!", ChronoUnit.DAYS.between(this.dateOfExpiry, LocalDate.now())));
         }
         return false;
     }
