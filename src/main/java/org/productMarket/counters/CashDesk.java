@@ -1,42 +1,50 @@
 package org.productMarket.counters;
 
 import org.productMarket.cashiers.Cashier;
-import org.productMarket.exceptions.NoSoldProducts;
-import org.productMarket.markets.Market;
 import org.productMarket.products.Product;
 import org.productMarket.receipts.Receipt;
+import org.productMarket.utils.ReceiptUtil;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class CashDesk {
+public class CashDesk implements Serializable {
 
     private Cashier cashier;
 
     public CashDesk(Cashier cashier) {
-        this.cashier = cashier;
+        this.setCashier(cashier);
     }
 
     public void changeCashier(Cashier cashier) {
         this.cashier = cashier;
     }
 
-    public Receipt payForProducts(Map<Product, Integer> products) throws NoSoldProducts {
+    public Receipt generateReceipt(Map<Product, Integer> products) {
         // generate receipt
         Receipt receipt = new Receipt(this.cashier, products);
 
-        // update products in market
-        products.forEach(Market::decreaseProductQuantity);
+        // write the content from the receipt in a file
+        ReceiptUtil.saveReceipt(receipt);
 
-        // calculate income from sold products
-        Market.income = Market.income.add(Market.calculateCurrentIncome(products));
-
-        // add receipt to the market
-        Market.addReceipt(receipt);
-
-        return receipt;
+       return receipt;
     }
 
     public Cashier getCashier() {
         return cashier;
+    }
+
+    public void setCashier(Cashier cashier) {
+        if (cashier == null) {
+            throw new NullPointerException("Cashier cannot be null!");
+        }
+        this.cashier = cashier;
+    }
+
+    @Override
+    public String toString() {
+        return "CashDesk{" +
+                "cashier=" + cashier +
+                '}';
     }
 }

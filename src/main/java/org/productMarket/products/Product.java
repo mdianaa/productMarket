@@ -9,9 +9,10 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.UUID;
 
-public abstract class Product implements Serializable {
+public abstract class Product implements Comparable<Product>, Serializable {
 
     private String ID;
     private String name;
@@ -29,7 +30,8 @@ public abstract class Product implements Serializable {
     }
 
     public boolean isExpired() throws NonSellableExpiredProduct {
-        if (this.dateOfExpiry.isAfter(LocalDate.now())) {
+        // dateOfExpiry is null for NonEdible products
+        if (this.dateOfExpiry != null && LocalDate.now().isAfter(this.dateOfExpiry)) {
             throw new NonSellableExpiredProduct(String.format("This product is expired with %d days!", ChronoUnit.DAYS.between(this.dateOfExpiry, LocalDate.now())));
         }
         return false;
@@ -81,10 +83,30 @@ public abstract class Product implements Serializable {
     }
 
     private void setDateOfExpiry(LocalDate dateOfExpiry) {
-        if (dateOfExpiry == null && this.getType().equals(ProductCategory.EDIBLE)) {
+        if (dateOfExpiry == null) {
             throw new NullPointerException("Date of expiry cannot be null for edible products!");
         }
         this.dateOfExpiry = dateOfExpiry;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product product)) return false;
+        return ID.equals(product.ID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ID);
+    }
+
+    @Override
+    public int compareTo(Product o) {
+        if (this.ID.compareTo(o.ID) == 0) {
+            return 0;
+        }
+        return -1;
     }
 
     @Override

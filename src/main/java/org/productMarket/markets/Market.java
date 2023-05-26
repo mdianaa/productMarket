@@ -2,6 +2,7 @@ package org.productMarket.markets;
 
 import org.productMarket.cashiers.Cashier;
 import org.productMarket.counters.CashDesk;
+import org.productMarket.customers.Customer;
 import org.productMarket.receipts.Receipt;
 import org.productMarket.enums.ProductCategory;
 import org.productMarket.exceptions.*;
@@ -16,141 +17,178 @@ import java.util.*;
 
 public class Market implements Serializable {
 
-    public static double edibleProductsMarkup;
-    public static double nonEdibleProductsMarkup;
-    public static double discount;
-    public static int daysLeftTillExpiry;
-    public static Set<Cashier> cashiers;
-//    public static Map<Product, Integer> deliveredProducts;
-    public static BigDecimal expenses;
-    public static Map<Product, Integer> soldProducts;
-    public static Map<Product, Integer> productsInStock;
-    public static List<Receipt> receipts;
-    public static int receiptsCount;
-    public static BigDecimal income;
+    private double edibleProductsMarkup;
+    private double nonEdibleProductsMarkup;
+    private double discount;
+    private int daysLeftTillExpiry;
+    private Set<Cashier> cashiers;
+    private Set<CashDesk> cashDesks;
+    private BigDecimal expenses;
+    private Map<Product, Integer> productsInStock;
+    private List<Receipt> receipts;
+    private int countReceipts;
+    private BigDecimal income;
 
     public Market(double edibleProductsMarkup, double nonEdibleProductsMarkup, int daysLeftTillExpiry, double discount) throws NegativeProductMarkup, NegativeDays, NegativeDiscountValue {
         setEdibleProductsMarkup(edibleProductsMarkup);
         setNonEdibleProductsMarkup(nonEdibleProductsMarkup);
         setDaysLeftTillExpiry(daysLeftTillExpiry);
         setDiscount(discount);
-        cashiers = new HashSet<>();
-        soldProducts = new HashMap<>();
-        productsInStock = new HashMap<>();
-        receipts = new ArrayList<>();
-        income = new BigDecimal(0);
-        expenses = new BigDecimal(0);
+        this.cashiers = new HashSet<>();
+        this.cashDesks = new HashSet<>();
+        this.productsInStock = new HashMap<>();
+        this.receipts = new ArrayList<>();
+        this.income = new BigDecimal(0);
+        this.expenses = new BigDecimal(0);
     }
 
-    public static void addDeliveredProduct(Product product, Integer quantity) throws InvalidQuantityOfProduct {
+    public void addDeliveredProduct(Product product, Integer quantity) throws InvalidQuantityOfProduct, NegativeSellingPrice, NonSellableExpiredProduct {
         if (quantity <= 0) {
             throw new InvalidQuantityOfProduct("Quantity must be a positive number!");
         }
-        expenses = expenses.add(product.getDeliveryPrice().multiply(BigDecimal.valueOf(quantity)));
 
-        productsInStock.putIfAbsent(product, 0);
-        productsInStock.put(product, productsInStock.get(product) + quantity);
+        // define selling price on product
+        calculateSellingPrice(product);
+
+        // check whether the product is for discount before adding it and add discount
+        calculateDiscount(product);
+
+        // add product in the market
+        this.productsInStock.putIfAbsent(product, 0);
+        this.productsInStock.put(product, this.productsInStock.get(product) + quantity);
+
+        // calculate expenses from the delivery
+        this.expenses = this.expenses.add(product.getDeliveryPrice().multiply(BigDecimal.valueOf(quantity)));
     }
 
-    public static void defineSellingPrice(Product product) throws NegativeSellingPrice {
-        if (product.getType().equals(ProductCategory.EDIBLE)) {
-            product.setSellingPrice(product.getDeliveryPrice().multiply(BigDecimal.valueOf(edibleProductsMarkup)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP).add(product.getDeliveryPrice()));
-        } else {
-            product.setSellingPrice(product.getDeliveryPrice().multiply(BigDecimal.valueOf(nonEdibleProductsMarkup)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP).add(product.getDeliveryPrice()));
-        }
-    }
-
-    public static void defineSellingPriceWithDiscount(Product product) throws NonSellableExpiredProduct, NegativeSellingPrice {
+    private void calculateDiscount(Product product) throws NonSellableExpiredProduct, NegativeSellingPrice {
         if (!product.isExpired() && isForDiscount(product)) {
-            product.setSellingPrice(product.getSellingPrice().subtract(product.getSellingPrice().multiply(BigDecimal.valueOf(discount)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)));
+            product.setSellingPrice(product.getSellingPrice().subtract(product.getSellingPrice().multiply(BigDecimal.valueOf(this.discount)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)));
         }
     }
 
-    public static boolean isForDiscount(Product product) {
-        return ChronoUnit.DAYS.between(LocalDate.now(), product.getDateOfExpiry()) < daysLeftTillExpiry;
-    }
-
-    public static boolean isEnoughQuantity(Product product, int quantity) throws InsufficientQuantityOfProduct, NonExistingProduct {
-        if (isAvailable(product) && productsInStock.get(product) >= quantity) {
-            return true;
+    private void calculateSellingPrice(Product product) throws NegativeSellingPrice {
+        if (product.getType().equals(ProductCategory.EDIBLE)) {
+            product.setSellingPrice(product.getDeliveryPrice().multiply(BigDecimal.valueOf(this.edibleProductsMarkup)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP).add(product.getDeliveryPrice()));
+        } else if (product.getType().equals(ProductCategory.NON_EDIBLE)) {
+            product.setSellingPrice(product.getDeliveryPrice().multiply(BigDecimal.valueOf(this.nonEdibleProductsMarkup)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP).add(product.getDeliveryPrice()));
         }
-        // the market has the product but the quantity is not enough
-        int insufficientQuantity = quantity - productsInStock.get(product);
-        throw new InsufficientQuantityOfProduct(String.format("Insufficient quantity from the selected product: \nProduct: %s\nInsufficient quantity: %d\n", product.getName(), insufficientQuantity));
     }
 
-    public static boolean isAvailable(Product product) throws NonExistingProduct {
-        if (!productsInStock.containsKey(product)) {
-            // the market doesn't have the product at all
-            throw new NonExistingProduct(String.format("The selected product \"%s\" doesn't exist in the market!\n", product.getName()));
-        }
-        return true;
-    }
-
-    public static void decreaseProductQuantity(Product product, Integer requiredQuantity) {
-        int availableQuantity = productsInStock.get(product);
+    public void decreaseProductQuantity(Product product, Integer requiredQuantity) {
+        int availableQuantity = this.productsInStock.get(product);
         if (availableQuantity - requiredQuantity == 0) {
-            productsInStock.remove(product);
+            this.productsInStock.remove(product);
         } else {
-            productsInStock.put(product, availableQuantity - requiredQuantity);
+            this.productsInStock.put(product, availableQuantity - requiredQuantity);
         }
-
-        soldProducts.putIfAbsent(product, 0);
-        soldProducts.put(product, soldProducts.get(product) + requiredQuantity);
     }
 
-    public static Receipt sellProducts(Map<Product, Integer> products, CashDesk cashDesk) throws NonExistingProduct, InsufficientQuantityOfProduct, NoSoldProducts {
-        for (Map.Entry<Product, Integer> entry : products.entrySet()) {
-            if (!Market.isAvailable(entry.getKey()) || !Market.isEnoughQuantity(entry.getKey(), entry.getValue())) {
-                products.remove(entry.getKey());
+    public Receipt sellProducts(Map<String, Integer> shoppingList, CashDesk cashDesk, Customer customer) {
+        // create map for the sold products
+        Map<Product, Integer> soldProducts = new HashMap<>();
+
+        // iterate shoppingList and productsInStock to find the same products
+        for (Map.Entry<String, Integer> shoppingListProduct : shoppingList.entrySet()) {
+
+            String productToBuy = shoppingListProduct.getKey();
+            int requiredQuantity = shoppingListProduct.getValue();
+            for (Map.Entry<Product, Integer> product : this.productsInStock.entrySet()) {
+
+                Product stockProduct = product.getKey();
+                // get the same product name from the productsInStock as in shoppingList
+                if (stockProduct.getName().equals(productToBuy)) {
+                    if (customer.canBuyProduct(stockProduct, requiredQuantity)) {
+                        // customer has enough money, buys the product and his money are decreased
+                        customer.decreaseMoney(stockProduct, requiredQuantity);
+                        soldProducts.put(stockProduct, requiredQuantity);
+                    } else {
+                        // customer does not have enough to buy current product
+                        shoppingList.remove(productToBuy);
+                    }
+                }
             }
         }
-        return cashDesk.payForProducts(products);
+
+        // current receipt from cash desk
+        Receipt currentReceipt = cashDesk.generateReceipt(soldProducts);
+
+        // add receipt to the total amount of receipts
+        this.addReceipt(currentReceipt);
+        this.countReceipts++;
+
+        // update shoppingList in market
+        soldProducts.forEach(this::decreaseProductQuantity);
+
+        // calculate income from the sold shoppingList and add it to the total income
+        this.setIncome(getIncome().add(calculateCurrentIncome(soldProducts)));
+
+        return currentReceipt;
     }
 
-    public static void addCashier(Cashier cashier) {
-        cashiers.add(cashier);
-        expenses = expenses.add(cashier.getSalary());
+    public Map<String, Integer> checkProductsAvailability(Map<String, Integer> shoppingList) {
+        Map<String, Integer> availableProducts = new HashMap<>();
+
+        for (Map.Entry<String, Integer> productEntry : shoppingList.entrySet()) {
+            try {
+                if (isAvailable(productEntry.getKey(), productEntry.getValue())) {
+                    availableProducts.put(productEntry.getKey(), productEntry.getValue());
+                }
+            } catch (InsufficientQuantityOfProduct e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        if (availableProducts.size() == 0) {
+            System.out.println("No products from the shopping list were able to be sold from the market!");
+            return null;
+        }
+
+        return availableProducts;
     }
 
-    public static void addReceipt(Receipt receipt) {
-        receipts.add(receipt);
+    public boolean isForDiscount(Product product) {
+        return ChronoUnit.DAYS.between(LocalDate.now(), product.getDateOfExpiry()) < this.daysLeftTillExpiry;
     }
 
-//    public static BigDecimal calculateExpenses() throws NoDeliveredProducts, NoAvailableCashiers {
-//        return calculateCashiersSalaries()
-//                .add(calculateDeliveryExpenses());
-//    }
+    public boolean isAvailable(String product, int quantity) throws InsufficientQuantityOfProduct {
+        for (Map.Entry<Product, Integer> productEntry : productsInStock.entrySet()) {
+            if (productEntry.getKey().getName().equals(product) && productEntry.getValue() >= quantity) {
+                // the market has the product and the quantity is enough
+                return true;
+            } else if (productEntry.getKey().getName().equals(product) && productEntry.getValue() < quantity) {
+                // the market has the product but the quantity is not enough
+                int insufficientQuantity = quantity - productEntry.getValue();
+                throw new InsufficientQuantityOfProduct(String.format("Insufficient quantity from the selected product: \nProduct: %s\nInsufficient quantity: %d\n", productEntry.getKey().getName(), insufficientQuantity));
+            }
+        }
 
-    public static BigDecimal calculateProfit() {
+        // return false if the product does not exist on the market
+        return false;
+    }
+
+    public void addCashier(Cashier cashier) {
+        this.cashiers.add(cashier);
+        this.expenses = this.expenses.add(cashier.getSalary());
+    }
+
+    public void addCashDesk(CashDesk cashDesk) {
+        this.cashDesks.add(cashDesk);
+    }
+
+    public void addReceipt(Receipt receipt) {
+        this.receipts.add(receipt);
+    }
+
+    public BigDecimal calculateProfit() {
         return income.subtract(expenses);
     }
 
-//    public static BigDecimal calculateCashiersSalaries() throws NoAvailableCashiers {
-//        if (cashiers.size() == 0) {
-//            throw new NoAvailableCashiers("Currently, there are no available cashiers!");
-//        }
-//        return cashiers.stream().map(Cashier::getSalary).reduce(BigDecimal.valueOf(0), BigDecimal::add);
-//    }
-
-//    public static BigDecimal calculateDeliveryExpenses() throws NoDeliveredProducts {
-//        // delivered products
-//        if (deliveredProducts.size() == 0) {
-//            throw new NoDeliveredProducts("Currently, there are no delivered products in the market!");
-//        }
-//        BigDecimal deliveryExpenses = BigDecimal.valueOf(0);
-//        for (Map.Entry<Product, Integer> entry : deliveredProducts.entrySet()) {
-//            deliveryExpenses.add(entry.getKey().getDeliveryPrice().multiply(BigDecimal.valueOf(entry.getValue())));
-//        }
-//
-//        return deliveryExpenses;
-//    }
-
-    public static BigDecimal calculateCurrentIncome(Map<Product, Integer> products) throws NoSoldProducts {
+    public BigDecimal calculateCurrentIncome(Map<Product, Integer> products) {
         // sold products
         BigDecimal income = BigDecimal.valueOf(0);
         for (Map.Entry<Product, Integer> entry : products.entrySet()) {
-            income.add(entry.getKey().getSellingPrice().multiply(BigDecimal.valueOf(entry.getValue())));
+            income = income.add(entry.getKey().getSellingPrice().multiply(BigDecimal.valueOf(entry.getValue())));
         }
 
         return income;
@@ -158,70 +196,98 @@ public class Market implements Serializable {
 
     // getters
 
-    public static double getEdibleProductsMarkup() {
+    public double getEdibleProductsMarkup() {
         return edibleProductsMarkup;
     }
 
-    public static double getNonEdibleProductsMarkup() {
+    public double getNonEdibleProductsMarkup() {
         return nonEdibleProductsMarkup;
     }
 
-    public static double getDiscount() {
+    public double getDiscount() {
         return discount;
     }
 
-    public static int getDaysLeftTillExpiry() {
+    public int getDaysLeftTillExpiry() {
         return daysLeftTillExpiry;
     }
 
-    public static int getCountReceipts() {
-        return receipts.size();
-    }
-
-    public static Set<Cashier> getCashiers() {
+    public Set<Cashier> getCashiers() {
         return Collections.unmodifiableSet(cashiers);
     }
 
-    public static Map<Product, Integer> getSoldProducts() {
-        return Collections.unmodifiableMap(soldProducts);
+    public Set<CashDesk> getCashDesks() {
+        return Collections.unmodifiableSet(cashDesks);
     }
 
-    public static Map<Product, Integer> getProductsInStock() {
+    public Map<Product, Integer> getProductsInStock() {
         return Collections.unmodifiableMap(productsInStock);
     }
 
-    public static List<Receipt> getReceipts() {
+    public List<Receipt> getReceipts() {
         return Collections.unmodifiableList(receipts);
+    }
+
+    public BigDecimal getExpenses() {
+        return expenses;
+    }
+
+    public int getCountReceipts() {
+        return countReceipts;
+    }
+
+    public BigDecimal getIncome() {
+        return income;
     }
 
     // setters
 
-    public static void setEdibleProductsMarkup(double edibleProductsMarkup) throws NegativeProductMarkup {
+    public void setEdibleProductsMarkup(double edibleProductsMarkup) throws NegativeProductMarkup {
         if (edibleProductsMarkup <= 0) {
             throw new NegativeProductMarkup("Product markup cannot be zero or negative number!");
         }
-        Market.edibleProductsMarkup = edibleProductsMarkup;
+        this.edibleProductsMarkup = edibleProductsMarkup;
     }
 
-    public static void setNonEdibleProductsMarkup(double nonEdibleProductsMarkup) throws NegativeProductMarkup {
+    public void setNonEdibleProductsMarkup(double nonEdibleProductsMarkup) throws NegativeProductMarkup {
         if (nonEdibleProductsMarkup <= 0) {
             throw new NegativeProductMarkup("Product markup cannot be zero or negative number!");
         }
-        Market.nonEdibleProductsMarkup = nonEdibleProductsMarkup;
+        this.nonEdibleProductsMarkup = nonEdibleProductsMarkup;
     }
 
-    public static void setDaysLeftTillExpiry(int daysLeftTillExpiry) throws NegativeDays {
+    public void setDaysLeftTillExpiry(int daysLeftTillExpiry) throws NegativeDays {
         if (daysLeftTillExpiry < 0) {
             throw new NegativeDays("Days left till expiry cannot be negative number!");
         }
-        Market.daysLeftTillExpiry = daysLeftTillExpiry;
+        this.daysLeftTillExpiry = daysLeftTillExpiry;
     }
 
-    public static void setDiscount(double discount) throws NegativeDiscountValue {
+    public void setDiscount(double discount) throws NegativeDiscountValue {
         if (discount <= 0) {
             throw new NegativeDiscountValue("Discount cannot be zero or negative number!");
         }
-        Market.discount = discount;
+        this.discount = discount;
     }
 
+    public void setIncome(BigDecimal income) {
+        this.income = income;
+    }
+
+    @Override
+    public String toString() {
+        return "Market{" +
+                "edibleProductsMarkup=" + edibleProductsMarkup +
+                ", nonEdibleProductsMarkup=" + nonEdibleProductsMarkup +
+                ", discount=" + discount +
+                ", daysLeftTillExpiry=" + daysLeftTillExpiry +
+                ", cashiers=" + cashiers +
+                ", cashDesks=" + cashDesks +
+                ", expenses=" + expenses +
+                ", productsInStock=" + productsInStock +
+                ", receipts=" + receipts +
+                ", countReceipts=" + countReceipts +
+                ", income=" + income +
+                '}';
+    }
 }

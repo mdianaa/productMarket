@@ -1,7 +1,6 @@
 package org.productMarket.receipts;
 
 import org.productMarket.cashiers.Cashier;
-import org.productMarket.markets.Market;
 import org.productMarket.products.Product;
 
 import java.io.Serializable;
@@ -10,24 +9,21 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Map;
 
-public class Receipt implements Serializable {
+public class Receipt implements Serializable, Comparable<Receipt> {
 
-    private int serialNumber;
+    private static long count;
+    private long serialNumber;
     private Cashier cashier;
     private LocalDate dateOfIssue;
     private Map<Product, Integer> products;
     private BigDecimal totalPrice;
 
     public Receipt(Cashier cashier, Map<Product, Integer> products) {
-        this.serialNumber = ++Market.receiptsCount;
+        this.serialNumber = ++count;
         this.setCashier(cashier);
-        this. dateOfIssue = LocalDate.now();
+        this.dateOfIssue = LocalDate.now();
         this.products = products;
         this.totalPrice = calculateTotalPrice();
-    }
-
-    public void issueReceipt() {
-        // TODO - write in file
     }
 
     private BigDecimal calculateTotalPrice() {
@@ -71,7 +67,16 @@ public class Receipt implements Serializable {
                 ", cashier=" + cashier +
                 ", dateOfIssue=" + dateOfIssue +
                 ", products=" + products +
-                ", totalAmount=" + totalPrice +
+                ", totalPrice=" + totalPrice +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Receipt o) {
+        if (this.serialNumber == o.serialNumber) {
+            return 0;
+        }
+
+        return -1;
     }
 }
