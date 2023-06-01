@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.productMarket.cashiers.Cashier;
 import org.productMarket.counters.CashDesk;
+import org.productMarket.customers.Customer;
 import org.productMarket.exceptions.*;
 import org.productMarket.markets.Market;
 import org.productMarket.products.EdibleProduct;
@@ -204,7 +205,31 @@ public class MarketTest {
         Assert.assertEquals("Quantity must be a positive number!", error);
     }
 
+    @Test
+    public void testSellProducts() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, NonSellableExpiredProduct, InvalidQuantityOfProduct, NegativeSellingPrice, NegativeStackOfMoney {
+        Market market = new Market(50, 5, 3, 10);
+        Cashier cashier = new Cashier("Peter", BigDecimal.valueOf(1000));
+        CashDesk cashDesk = new CashDesk(cashier);
+        Customer customer = new Customer("Ivan", BigDecimal.valueOf(100));
 
+        Product product1 = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 7, 10));
+        Product product2 = new EdibleProduct("Apple", BigDecimal.valueOf(4), LocalDate.of(2023, 7, 10));
+        Product product3 = new EdibleProduct("Bread", BigDecimal.valueOf(1), LocalDate.of(2023, 7, 10));
+
+        market.addDeliveredProduct(product1, 3);
+        market.addDeliveredProduct(product2, 3);
+        market.addDeliveredProduct(product3, 3);
+
+        Map<String, Integer> shoppingList = new HashMap<>();
+        shoppingList.put("Banana", 2);
+        shoppingList.put("Apple", 2);
+
+        market.sellProducts(shoppingList, cashDesk, customer);
+
+        Assert.assertEquals(1, market.getReceipts().size());
+        Assert.assertEquals(1, (int) market.getProductsInStock().get(product1));
+        Assert.assertEquals(1, (int) market.getProductsInStock().get(product2));
+    }
 
     @Test
     public void testCheckProductsAvailability() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, NonSellableExpiredProduct, InvalidQuantityOfProduct, NegativeSellingPrice {
@@ -268,8 +293,6 @@ public class MarketTest {
         Assert.assertEquals(1, availableProducts.size());
         Assert.assertTrue(shoppingList.containsKey("Banana"));
     }
-
-
 
     @Test
     public void testAddCashier() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
