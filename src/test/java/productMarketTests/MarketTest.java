@@ -17,46 +17,123 @@ import java.util.Map;
 
 public class MarketTest {
 
-    @Test(expected = NegativeProductMarkup.class)
-    public void testSetEdibleProductsMarkupWithNegativeValueThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
-        new Market(-2, 5, 3, 13);
-    }
+    @Test
+    public void testCreateValidMarket() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
+        Market market = null;
+        String error = null;
 
-    @Test(expected = NegativeProductMarkup.class)
-    public void testSetEdibleProductsMarkupWithZeroThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
-        new Market(0, 5, 3, 13);
-    }
+        try {
+            market = new Market(10, 5, 3, 13);
+        } catch (NullPointerException e) {
+            error = e.getMessage();
+        }
 
-    @Test(expected = NegativeProductMarkup.class)
-    public void testSetNonEdibleProductsMarkupWithNegativeValueThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
-        new Market(10, -2, 3, 13);
-    }
-
-    @Test(expected = NegativeProductMarkup.class)
-    public void testSetNonEdibleProductsMarkupWithZeroThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
-        new Market(10, 0, 3, 13);
-    }
-
-    @Test(expected = NegativeDays.class)
-    public void testSetDaysLeftTillExpiryWithNegativeValueThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
-        new Market(10, 5, -2, 13);
+        Assert.assertNull(error);
+        Assert.assertNotNull(market);
     }
 
     @Test
-    public void testSetDaysLeftTillExpiryWithZero() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
-        Market market = new Market(10, 5, 0, 13);
+    public void testSetEdibleProductsMarkupWithNegativeValueThrows() throws NegativeDays, NegativeDiscountValue {
+        String error = null;
 
-        Assert.assertEquals(0, market.getDaysLeftTillExpiry());
+        try {
+            new Market(-2, 5, 3, 13);
+        } catch (NegativeProductMarkup e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Product markup cannot be zero or negative number!", error);
     }
 
-    @Test(expected = NegativeDiscountValue.class)
-    public void testSetDiscountWithNegativeNumberThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
-        new Market(10, 5, 3, -10);
+    @Test
+    public void testSetEdibleProductsMarkupWithZeroThrows() throws NegativeDays, NegativeDiscountValue {
+        String error = null;
+
+        try {
+            new Market(0, 5, 3, 13);
+        } catch (NegativeProductMarkup e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Product markup cannot be zero or negative number!", error);
     }
 
-    @Test(expected = NegativeDiscountValue.class)
-    public void testSetDiscountWithZeroThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
-        new Market(10, 5, 3, 0);
+    @Test
+    public void testSetNonEdibleProductsMarkupWithNegativeValueThrows() throws NegativeDays, NegativeDiscountValue {
+        String error = null;
+
+        try {
+            new Market(10, -5, 3, 13);
+        } catch (NegativeProductMarkup e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Product markup cannot be zero or negative number!", error);
+    }
+
+    @Test
+    public void testSetNonEdibleProductsMarkupWithZeroThrows() throws NegativeDays, NegativeDiscountValue {
+        String error = null;
+
+        try {
+            new Market(10, 0, 3, 13);
+        } catch (NegativeProductMarkup e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Product markup cannot be zero or negative number!", error);
+    }
+
+    @Test
+    public void testSetDaysLeftTillExpiryWithNegativeValueThrows() throws NegativeProductMarkup, NegativeDiscountValue {
+        String error = null;
+
+        try {
+            new Market(10, 5, -2, 13);
+        } catch (NegativeDays e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Days left till expiry cannot be zero or negative number!", error);
+    }
+
+    @Test
+    public void testSetDaysLeftTillExpiryWithZero() throws NegativeProductMarkup, NegativeDiscountValue {
+        String error = null;
+
+        try {
+            new Market(10, 5, 0, 13);
+        } catch (NegativeDays e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Days left till expiry cannot be zero or negative number!", error);
+    }
+
+    @Test
+    public void testSetDiscountWithNegativeNumberThrows() throws NegativeDays, NegativeProductMarkup {
+        String error = null;
+
+        try {
+            new Market(10, 5, 2, -2);
+        } catch (NegativeDiscountValue e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Discount cannot be zero or negative number!", error);
+    }
+
+    @Test
+    public void testSetDiscountWithZeroThrows() throws NegativeDays, NegativeProductMarkup {
+        String error = null;
+
+        try {
+            new Market(10, 5, 2, 0);
+        } catch (NegativeDiscountValue e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Discount cannot be zero or negative number!", error);
     }
 
     @Test
@@ -69,10 +146,10 @@ public class MarketTest {
 
     @Test
     public void testAddDeliveredProductWithValidQuantity() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, InvalidQuantityOfProduct, NonSellableExpiredProduct, NegativeSellingPrice {
-        Market market = new Market(10, 5, 3, 10);
+        Market market = new Market(50, 5, 4, 10);
 
         Product product1 = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 7, 10));
-        Product product2 = new EdibleProduct("Apple", BigDecimal.valueOf(4), LocalDate.of(2023, 7, 10));
+        Product product2 = new EdibleProduct("Apple", BigDecimal.valueOf(4), LocalDate.of(2023, 6, 2));
         Product product3 = new EdibleProduct("Bread", BigDecimal.valueOf(1), LocalDate.of(2023, 7, 10));
 
         market.addDeliveredProduct(product1, 3);
@@ -81,9 +158,11 @@ public class MarketTest {
 
         Assert.assertEquals(3, market.getProductsInStock().size());
         Assert.assertEquals(BigDecimal.valueOf(24), market.getExpenses());
+        Assert.assertEquals(BigDecimal.valueOf(4.50), product1.getSellingPrice());
+        Assert.assertEquals(BigDecimal.valueOf(5.40), product2.getSellingPrice());
     }
 
-    @Test(expected = InvalidQuantityOfProduct.class)
+    @Test
     public void testAddDeliveredProductWithNegativeQuantityNumberThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, InvalidQuantityOfProduct, NonSellableExpiredProduct, NegativeSellingPrice {
         Market market = new Market(10, 5, 3, 10);
 
@@ -91,12 +170,20 @@ public class MarketTest {
         Product product2 = new EdibleProduct("Apple", BigDecimal.valueOf(4), LocalDate.of(2023, 7, 10));
         Product product3 = new EdibleProduct("Bread", BigDecimal.valueOf(1), LocalDate.of(2023, 7, 10));
 
-        market.addDeliveredProduct(product1, -3);
-        market.addDeliveredProduct(product2, 3);
-        market.addDeliveredProduct(product3, 3);
+        String error = null;
+
+        try {
+            market.addDeliveredProduct(product1, -3);
+            market.addDeliveredProduct(product2, 3);
+            market.addDeliveredProduct(product3, 3);
+        } catch (InvalidQuantityOfProduct e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Quantity must be a positive number!", error);
     }
 
-    @Test(expected = InvalidQuantityOfProduct.class)
+    @Test
     public void testAddDeliveredProductWithZeroQuantityNumberThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, InvalidQuantityOfProduct, NonSellableExpiredProduct, NegativeSellingPrice {
         Market market = new Market(10, 5, 3, 10);
 
@@ -104,46 +191,23 @@ public class MarketTest {
         Product product2 = new EdibleProduct("Apple", BigDecimal.valueOf(4), LocalDate.of(2023, 7, 10));
         Product product3 = new EdibleProduct("Bread", BigDecimal.valueOf(1), LocalDate.of(2023, 7, 10));
 
-        market.addDeliveredProduct(product1, 0);
-        market.addDeliveredProduct(product2, 3);
-        market.addDeliveredProduct(product3, 3);
+        String error = null;
+
+        try {
+            market.addDeliveredProduct(product1, 0);
+            market.addDeliveredProduct(product2, 3);
+            market.addDeliveredProduct(product3, 3);
+        } catch (InvalidQuantityOfProduct e) {
+            error = e.getMessage();
+        }
+
+        Assert.assertEquals("Quantity must be a positive number!", error);
     }
 
 
 
-
-
-
-
-
-
-
     @Test
-    public void testIsForDiscountWithDaysLessThanDaysLeftTillDiscount() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice {
-        Market market = new Market(10, 5, 3, 10);
-        Product product = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 5, 27));
-
-        Assert.assertTrue(market.isForDiscount(product));
-    }
-
-    @Test
-    public void testIsForDiscountWithZeroDaysLeftTillExpiry() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice {
-        Market market = new Market(10, 5, 3, 10);
-        Product product = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 5, 26));
-
-        Assert.assertTrue(market.isForDiscount(product));
-    }
-
-    @Test
-    public void testIsForDiscountWithDaysMoreThanDaysLeftTillExpiry() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice {
-        Market market = new Market(10, 5, 3, 10);
-        Product product = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 7, 30));
-
-        Assert.assertFalse(market.isForDiscount(product));
-    }
-
-    @Test
-    public void testIsAvailableReturnsTrue() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, InvalidQuantityOfProduct, InsufficientQuantityOfProduct, NonExistingProduct, NonSellableExpiredProduct, NegativeSellingPrice {
+    public void testCheckProductsAvailability() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, NonSellableExpiredProduct, InvalidQuantityOfProduct, NegativeSellingPrice {
         Market market = new Market(10, 5, 3, 10);
 
         Product product1 = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 7, 10));
@@ -154,40 +218,18 @@ public class MarketTest {
         market.addDeliveredProduct(product2, 3);
         market.addDeliveredProduct(product3, 3);
 
-        Assert.assertTrue(market.isAvailable("Banana", 3));
-        Assert.assertTrue(market.isAvailable("Apple", 3));
-        Assert.assertTrue(market.isAvailable("Bread", 3));
+        Map<String, Integer> shoppingList = new HashMap<>();
+        shoppingList.put("Banana", 2);
+        shoppingList.put("Apple", 2);
+
+        Map<String, Integer> availableProducts = market.checkProductsAvailability(shoppingList);
+        Assert.assertEquals(2, availableProducts.size());
+        Assert.assertTrue(shoppingList.containsKey("Banana"));
+        Assert.assertTrue(shoppingList.containsKey("Apple"));
     }
 
     @Test
-    public void testIsAvailableWithNonExistingProductReturnsFalse() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, InvalidQuantityOfProduct, InsufficientQuantityOfProduct, NonExistingProduct, NonSellableExpiredProduct, NegativeSellingPrice {
-        Market market = new Market(10, 5, 3, 10);
-
-        Product product1 = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 7, 10));
-        Product product2 = new EdibleProduct("Apple", BigDecimal.valueOf(4), LocalDate.of(2023, 7, 10));
-        Product product3 = new EdibleProduct("Bread", BigDecimal.valueOf(1), LocalDate.of(2023, 7, 10));
-
-        market.addDeliveredProduct(product1, 3);
-        market.addDeliveredProduct(product2, 3);
-
-        Assert.assertFalse(market.isAvailable("Bread", 3));
-    }
-
-    @Test(expected = InsufficientQuantityOfProduct.class)
-    public void testIsAvailableWithNotEnoughQuantityOfExistingProductThrows() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, InvalidQuantityOfProduct, InsufficientQuantityOfProduct, NonExistingProduct, NonSellableExpiredProduct, NegativeSellingPrice {
-        Market market = new Market(10, 5, 3, 10);
-
-        Product product1 = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 7, 10));
-        Product product2 = new EdibleProduct("Apple", BigDecimal.valueOf(4), LocalDate.of(2023, 7, 10));
-
-        market.addDeliveredProduct(product1, 3);
-        market.addDeliveredProduct(product2, 3);
-
-        market.isAvailable("Apple", 5);
-    }
-
-    @Test
-    public void testSellExistingProductWithAllAvailableQuantity() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, InvalidQuantityOfProduct, InsufficientQuantityOfProduct, NonExistingProduct, NonSellableExpiredProduct, NegativeSellingPrice {
+    public void testCheckProductsAvailabilityWithNonAvailableProducts() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, NonSellableExpiredProduct, InvalidQuantityOfProduct, NegativeSellingPrice {
         Market market = new Market(10, 5, 3, 10);
 
         Product product1 = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 7, 10));
@@ -198,13 +240,16 @@ public class MarketTest {
         market.addDeliveredProduct(product2, 3);
         market.addDeliveredProduct(product3, 3);
 
-        market.decreaseProductQuantity(product1, 3);
+        Map<String, Integer> shoppingList = new HashMap<>();
+        shoppingList.put("Tomato", 2);
+        shoppingList.put("Chocolate", 2);
 
-        Assert.assertFalse(market.getProductsInStock().containsKey(product1));
+        Map<String, Integer> availableProducts = market.checkProductsAvailability(shoppingList);
+        Assert.assertNull(availableProducts);
     }
 
     @Test
-    public void testSellExistingProductWithEnoughQuantity() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, InvalidQuantityOfProduct, InsufficientQuantityOfProduct, NonExistingProduct, NonSellableExpiredProduct, NegativeSellingPrice {
+    public void testCheckProductsAvailabilityWithOneAvailableProduct() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, NonSellableExpiredProduct, InvalidQuantityOfProduct, NegativeSellingPrice {
         Market market = new Market(10, 5, 3, 10);
 
         Product product1 = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 7, 10));
@@ -215,11 +260,16 @@ public class MarketTest {
         market.addDeliveredProduct(product2, 3);
         market.addDeliveredProduct(product3, 3);
 
-        market.decreaseProductQuantity(product1, 1);
+        Map<String, Integer> shoppingList = new HashMap<>();
+        shoppingList.put("Banana", 2);
+        shoppingList.put("Chocolate", 2);
 
-        Assert.assertTrue(market.getProductsInStock().containsKey(product1));
-        Assert.assertEquals(2, (int) market.getProductsInStock().get(product1));
+        Map<String, Integer> availableProducts = market.checkProductsAvailability(shoppingList);
+        Assert.assertEquals(1, availableProducts.size());
+        Assert.assertTrue(shoppingList.containsKey("Banana"));
     }
+
+
 
     @Test
     public void testAddCashier() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue {
@@ -266,15 +316,4 @@ public class MarketTest {
 
         Assert.assertTrue(market.getReceipts().contains(receipt));
     }
-
-    @Test
-    public void testCalculateProfit() {
-
-    }
-
-    @Test
-    public void testCalculateCurrentIncome() {
-
-    }
-
 }

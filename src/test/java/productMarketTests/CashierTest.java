@@ -25,7 +25,7 @@ public class CashierTest {
     }
 
     @Test
-    public void testSetNameWithBlankSpace() {
+    public void testSetNameWithBlankSpaceThrows() {
         String error = null;
 
         try {
@@ -38,7 +38,7 @@ public class CashierTest {
     }
 
     @Test
-    public void testSetNameWithNull() {
+    public void testSetNameWithNullThrows() {
         String error = null;
 
         try {
@@ -51,7 +51,7 @@ public class CashierTest {
     }
 
     @Test
-    public void testSetNameWithWhiteSpace() {
+    public void testSetNameWithWhiteSpaceThrows() {
         String error = null;
 
         try {

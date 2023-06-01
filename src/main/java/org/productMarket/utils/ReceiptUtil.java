@@ -17,9 +17,12 @@ public class ReceiptUtil {
             writer.write("Date of issue: " + receipt.getDateOfIssue()+ "\n");
             writer.write("Cashier: \n" + receipt.getCashier()+ "\n");
             writer.write("Products: \n");
-            for (Map.Entry<Product, Integer> entry : receipt.getProducts().entrySet()) {
-                writer.write("\t" + entry.getValue() + "x " + entry.getKey().getName() + " - " +
-                        entry.getKey().getSellingPrice().multiply(BigDecimal.valueOf(entry.getValue())) + "\n");
+            for (Map.Entry<Product, Integer> productEntry : receipt.getProducts().entrySet()) {
+                Product product = productEntry.getKey();
+                int quantity = productEntry.getValue();
+
+                writer.write("\t" + quantity + "x " + product.getSellingPrice() + " " + product.getName() + " - " +
+                        product.getSellingPrice().multiply(BigDecimal.valueOf(quantity)) + "\n");
             }
             writer.write("\nTotal receipt price: " + receipt.getTotalPrice());
 

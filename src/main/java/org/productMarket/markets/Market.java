@@ -75,7 +75,7 @@ public class Market implements Serializable {
         }
     }
 
-    public void decreaseProductQuantity(Product product, Integer requiredQuantity) {
+    private void decreaseProductQuantity(Product product, Integer requiredQuantity) {
         int availableQuantity = this.productsInStock.get(product);
         if (availableQuantity - requiredQuantity == 0) {
             this.productsInStock.remove(product);
@@ -147,11 +147,11 @@ public class Market implements Serializable {
         return availableProducts;
     }
 
-    public boolean isForDiscount(Product product) {
+    private boolean isForDiscount(Product product) {
         return ChronoUnit.DAYS.between(LocalDate.now(), product.getDateOfExpiry()) < this.daysLeftTillExpiry;
     }
 
-    public boolean isAvailable(String product, int quantity) throws InsufficientQuantityOfProduct {
+    private boolean isAvailable(String product, int quantity) throws InsufficientQuantityOfProduct {
         for (Map.Entry<Product, Integer> productEntry : productsInStock.entrySet()) {
             if (productEntry.getKey().getName().equals(product) && productEntry.getValue() >= quantity) {
                 // the market has the product and the quantity is enough
@@ -257,8 +257,8 @@ public class Market implements Serializable {
     }
 
     public void setDaysLeftTillExpiry(int daysLeftTillExpiry) throws NegativeDays {
-        if (daysLeftTillExpiry < 0) {
-            throw new NegativeDays("Days left till expiry cannot be negative number!");
+        if (daysLeftTillExpiry <= 0) {
+            throw new NegativeDays("Days left till expiry cannot be zero or negative number!");
         }
         this.daysLeftTillExpiry = daysLeftTillExpiry;
     }

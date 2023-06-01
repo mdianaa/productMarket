@@ -30,8 +30,7 @@ public abstract class Product implements Comparable<Product>, Serializable {
     }
 
     public boolean isExpired() throws NonSellableExpiredProduct {
-        // dateOfExpiry is null for NonEdible products
-        if (this.dateOfExpiry != null && LocalDate.now().isAfter(this.dateOfExpiry)) {
+        if (LocalDate.now().isAfter(this.dateOfExpiry)) {
             throw new NonSellableExpiredProduct(String.format("This product is expired with %d days!", ChronoUnit.DAYS.between(this.dateOfExpiry, LocalDate.now())));
         }
         return false;
@@ -112,7 +111,8 @@ public abstract class Product implements Comparable<Product>, Serializable {
     @Override
     public String toString() {
         return "Product{" +
-                "name='" + name + '\'' +
+                "ID='" + ID + '\'' +
+                ", name='" + name + '\'' +
                 ", deliveryPrice=" + deliveryPrice +
                 ", sellingPrice=" + sellingPrice +
                 ", type=" + type +
