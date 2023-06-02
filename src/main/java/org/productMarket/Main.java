@@ -88,7 +88,7 @@ public class Main {
                 try {
                     SerializerUtil.serializeReceipt("receipt_" + receipt1.getSerialNumber() + "_serialized.ser", receipt1);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.out.println(e.getMessage());
                 }
             }
 
@@ -99,9 +99,9 @@ public class Main {
 
             // shopping list 2
             Map<String, Integer> shoppingList2 = new HashMap<>();
-            shoppingList2.put("Banana", 2);
-            shoppingList2.put("Eye cream", 3);
-            shoppingList2.put("Chocolate", 5);
+//            shoppingList2.put("Banana", 2);
+//            shoppingList2.put("Eye cream", 3);
+//            shoppingList2.put("Chocolate", 5);
             shoppingList2.put("Apple", 3);
 
             // check availability of products
@@ -113,7 +113,7 @@ public class Main {
                 try {
                     SerializerUtil.serializeReceipt("receipt_" + receipt2.getSerialNumber() + "_serialized.ser", receipt2);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.out.println(e.getMessage());
                 }
             }
 

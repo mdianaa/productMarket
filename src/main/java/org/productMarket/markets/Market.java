@@ -104,7 +104,7 @@ public class Market implements Serializable {
                         soldProducts.put(stockProduct, requiredQuantity);
                     } else {
                         // customer does not have enough to buy current product
-                        shoppingList.remove(productToBuy);
+                        System.out.println("Not enough money to buy product " + productToBuy);
                     }
                 }
             }
@@ -117,7 +117,7 @@ public class Market implements Serializable {
         this.addReceipt(currentReceipt);
         this.countReceipts++;
 
-        // update shoppingList in market
+        // update the quantity of the remaining products in the market
         soldProducts.forEach(this::decreaseProductQuantity);
 
         // calculate income from the sold shoppingList and add it to the total income
