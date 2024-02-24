@@ -1,0 +1,11 @@
+Receipt serial number: 1
+Date of issue: 2023-06-02
+Cashier: 
+	Name: Peter
+	ID: fc1db930-2f51-4431-a3a1-781393e4546d
+
+Products: 
+	2x 2.40 Banana - 4.80
+	3x 5.00 Eye cream - 15.00
+
+Total receipt price: 19.80

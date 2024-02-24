@@ -1,0 +1,11 @@
+Receipt serial number: 2
+Date of issue: 2023-06-02
+Cashier: 
+	Name: Alex
+	ID: 9272f285-0efd-43d5-935a-be54fa3ff788
+
+Products: 
+	5x 3.60 Chocolate - 18.00
+	3x 5.00 Eye cream - 15.00
+
+Total receipt price: 33.00

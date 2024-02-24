@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public class Cashier implements Comparable<Cashier>, Serializable {
+public class Cashier implements Serializable {
 
     private String name;
     private String id;
@@ -39,13 +39,5 @@ public class Cashier implements Comparable<Cashier>, Serializable {
     public String toString() {
         return "\tName: " + name + System.lineSeparator() +
                 "\tID: " + id + System.lineSeparator();
-    }
-
-    @Override
-    public int compareTo(Cashier o) {
-        if (this.id.compareTo(o.id) == 0) {
-            return 0;
-        }
-        return -1;
     }
 }

@@ -176,7 +176,7 @@ public class Market implements Serializable {
         this.cashDesks.add(cashDesk);
     }
 
-    public void addReceipt(Receipt receipt) {
+    private void addReceipt(Receipt receipt) {
         this.receipts.add(receipt);
     }
 

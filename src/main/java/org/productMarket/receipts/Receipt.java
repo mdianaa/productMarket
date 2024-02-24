@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Map;
 
-public class Receipt implements Serializable, Comparable<Receipt> {
+public class Receipt implements Serializable {
 
     private static long count;
     private long serialNumber;
@@ -69,14 +69,5 @@ public class Receipt implements Serializable, Comparable<Receipt> {
                 ", products=" + products +
                 ", totalPrice=" + totalPrice +
                 '}';
-    }
-
-    @Override
-    public int compareTo(Receipt o) {
-        if (this.serialNumber == o.serialNumber) {
-            return 0;
-        }
-
-        return -1;
     }
 }

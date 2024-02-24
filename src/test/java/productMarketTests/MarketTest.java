@@ -314,29 +314,4 @@ public class MarketTest {
 
         Assert.assertTrue(market.getCashDesks().contains(cashDesk));
     }
-
-    @Test
-    public void testAddReceipt() throws NegativeDays, NegativeProductMarkup, NegativeDiscountValue, NegativeDeliveryPrice, NegativeSellingPrice {
-        Market market = new Market(10, 5, 3, 10);
-        Cashier cashier = new Cashier("Peter", BigDecimal.valueOf(1000));
-
-        Product product1 = new EdibleProduct("Banana", BigDecimal.valueOf(3), LocalDate.of(2023, 5, 10));
-        Product product2 = new EdibleProduct("Apple", BigDecimal.valueOf(4), LocalDate.of(2023, 5, 10));
-        Product product3 = new EdibleProduct("Bread", BigDecimal.valueOf(1), LocalDate.of(2023, 5, 10));
-
-        product1.setSellingPrice(BigDecimal.valueOf(5));
-        product2.setSellingPrice(BigDecimal.valueOf(6));
-        product3.setSellingPrice(BigDecimal.valueOf(3));
-
-        Map<Product, Integer> products = new HashMap<>();
-        products.put(product1, 3);
-        products.put(product2, 3);
-        products.put(product3, 3);
-
-        Receipt receipt = new Receipt(cashier, products);
-
-        market.addReceipt(receipt);
-
-        Assert.assertTrue(market.getReceipts().contains(receipt));
-    }
 }

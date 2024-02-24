@@ -12,7 +12,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.UUID;
 
-public abstract class Product implements Comparable<Product>, Serializable {
+public abstract class Product implements Serializable {
 
     private String ID;
     private String name;
@@ -98,14 +98,6 @@ public abstract class Product implements Comparable<Product>, Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(ID);
-    }
-
-    @Override
-    public int compareTo(Product o) {
-        if (this.ID.compareTo(o.ID) == 0) {
-            return 0;
-        }
-        return -1;
     }
 
     @Override
